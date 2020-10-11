@@ -52,11 +52,20 @@ IF NOT DEFINED KUDU_SYNC_CMD (
 :: Deployment
 :: ----------
 
-echo Handling Basic Web Site deployment.
+:: 1. Installing npm packages
+echo Installing npm packages.
+call :ExecuteCmd npm install
+IF !ERRORLEVEL! NEQ 0 goto error
 
-:: 1. KuduSync
+:: 2. Build the react site
+echo Building react site
+call :ExecuteCmd npm run build
+IF !ERRORLEVEL! NEQ 0 goto error
+
+:: 3. KuduSync
+echo Calling kudu sync
 IF /I "%IN_PLACE_DEPLOYMENT%" NEQ "1" (
-  call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd"
+  call :ExecuteCmd "%KUDU_SYNC_CMD%" -v 50 -f "%DEPLOYMENT_SOURCE%\build" -t "%DEPLOYMENT_TARGET%" -n "%NEXT_MANIFEST_PATH%" -p "%PREVIOUS_MANIFEST_PATH%" -i ".git;.hg;.deployment;deploy.cmd"
   IF !ERRORLEVEL! NEQ 0 goto error
 )
 
