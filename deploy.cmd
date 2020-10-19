@@ -74,8 +74,11 @@ echo Installing server packages
 call :ExecuteCmd npm install
 IF !ERRORLEVEL! NEQ 0 goto error
 
+call :ExecuteCmd npm install --only=dev
+IF !ERRORLEVEL! NEQ 0 goto error
+
 :: 5. Build server
-echo Installing server pacakges
+echo Building server
 call :ExecuteCmd npm run build
 IF !ERRORLEVEL! NEQ 0 goto error
 
