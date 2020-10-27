@@ -6,6 +6,8 @@ import session from "koa-session";
 import authRouter from "./routes/authRouter";
 import { Profile, Strategy, StrategyOptions } from "passport-coinbase";
 import process from "process";
+import azure from 'azure-storage';
+import Web3 from 'web3';
 
 //
 // Read config from environment variables
@@ -15,11 +17,41 @@ const koaKey = process.env["KOA_KEY"];
 const clientID = process.env["OAUTH2_CLIENTID"];
 const clientSecret = process.env["OAUTH2_CLIENTSECRET"];
 const callbackURL = process.env["OAUTH2_CALLBACK"];
+const ethEndpoint = process.env["ETH_ENDPOINT"];
 
-if (!clientID || !clientSecret || !callbackURL || !koaKey) {
+if (!clientID || !clientSecret || !callbackURL || !koaKey || !ethEndpoint) {
   console.error("Missing rcfm environment settings");
   process.exit(1);
 }
+
+//
+// Configure Azure Storage
+//
+const tableSvc = azure.createTableService();
+tableSvc.createTableIfNotExists('rcfm', function (error, result, response){
+  if (error) {
+    console.error(`Error creating azure storage table: ${error}`);
+    process.exit(1);
+  }
+});
+
+const entGen = azure.TableUtilities.entityGenerator;
+
+const entResolverOptions = {
+  entityResolver:  (entity: any) => {
+    var resolvedEntity: any = {};
+
+    for(let key in entity) {
+        resolvedEntity[key] = entity[key]._;
+    }
+    return resolvedEntity;
+  }
+};
+
+//
+// Configure web3 / ethereum
+//
+const web3 = new Web3(ethEndpoint);
 
 //
 // Configure passport
@@ -28,16 +60,53 @@ const options: StrategyOptions = {
   clientID,
   clientSecret,
   callbackURL,
-  scope: ['wallet:user:read', 'wallet:user:email']
+  scope: ['wallet:user:read', 'wallet:user:email'],
+  accountCurrency: "MKR"
 };
 
 passport.use(
   new Strategy(options, 
     (accessToken: string, refreshToken: string, profile: Profile, done) => {
-      done(null, {
-        id: profile.id,
-        displayName: profile.displayName,
-        email: profile.email
+      const partitionKey = `coinbaseuser_${profile.id}`;
+      const rowKey = 'profile';
+      
+      tableSvc.retrieveEntity('rcfm', partitionKey, rowKey, {}, (error, coinBaseUserEntity, response) => {
+        if (response.statusCode === 404) {
+          const web3account = web3.eth.accounts.create();
+
+          // Create an eth account
+          coinBaseUserEntity = {
+            ethAddress: entGen.String(web3account.address),
+            ethPrivateKey: entGen.String(web3account.privateKey)
+          };
+        }
+        else if (error) {
+          console.error(`Error retrieving user: ${error}`);
+          done(error);
+        }
+
+        Object.assign(coinBaseUserEntity, {
+          PartitionKey: entGen.String(partitionKey),
+          RowKey: entGen.String(rowKey),
+          displayName: entGen.String(profile.displayName),
+          email: entGen.String(profile.emails![0].value),
+          lastLogin: entGen.DateTime(new Date()),
+          refreshToken: entGen.String(refreshToken)
+        });  
+
+        tableSvc.insertOrMergeEntity('rcfm', coinBaseUserEntity, (error, result, response) => {
+          if (error) {
+            console.error(`Error inserting user: ${error}`);
+            done(error);
+          } else {
+            done(null, {
+              id: profile.id,
+              displayName: profile.displayName,
+              email: profile.emails![0],
+              accessToken
+            });    
+          }
+        })
       });
     }
   )
