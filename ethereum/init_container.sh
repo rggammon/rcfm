@@ -2,6 +2,8 @@
 # See: https://ahmet.im/blog/minimal-init-process-for-containers/
 set -e
 
+/usr/sbin/nginx -g "daemon off;" &
+
 if [ -d /mnt/rcfm/geth ]
 then
     /usr/bin/geth \
@@ -22,7 +24,6 @@ then
         --allow-insecure-unlock &
 else
     echo "Not running geth"
-    sleep 1d
 fi
 
 wait -n
