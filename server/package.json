@@ -9,6 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@azure/search-documents": "^11.0.3",
     "axios": "^0.20.0",
     "azure-storage": "^2.10.3",
     "koa": "^2.13.0",

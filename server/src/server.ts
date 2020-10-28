@@ -4,6 +4,8 @@ import logger from "koa-logger";
 import passport from "koa-passport";
 import session from "koa-session";
 import authRouter from "./routes/authRouter";
+import trackRouter from "./routes/trackRouter";
+import searchRouter from "./routes/searchRouter";
 import { Profile, Strategy, StrategyOptions } from "passport-coinbase";
 import process from "process";
 import azure from 'azure-storage';
@@ -37,17 +39,6 @@ tableSvc.createTableIfNotExists('rcfm', function (error, result, response){
 
 const entGen = azure.TableUtilities.entityGenerator;
 
-const entResolverOptions = {
-  entityResolver:  (entity: any) => {
-    var resolvedEntity: any = {};
-
-    for(let key in entity) {
-        resolvedEntity[key] = entity[key]._;
-    }
-    return resolvedEntity;
-  }
-};
-
 //
 // Configure web3 / ethereum
 //
@@ -70,7 +61,7 @@ passport.use(
       const partitionKey = `coinbaseuser_${profile.id}`;
       const rowKey = 'profile';
       
-      tableSvc.retrieveEntity('rcfm', partitionKey, rowKey, {}, (error, coinBaseUserEntity, response) => {
+      tableSvc.retrieveEntity('rcfm', partitionKey, rowKey, {}, (error, coinBaseUserEntity: any, response) => {
         if (response.statusCode === 404) {
           const web3account = web3.eth.accounts.create();
 
@@ -103,6 +94,7 @@ passport.use(
               id: profile.id,
               displayName: profile.displayName,
               email: profile.emails![0],
+              ethAddress: coinBaseUserEntity.ethAddress._,
               accessToken
             });    
           }
@@ -142,6 +134,18 @@ app.use(passport.session())
 // Add routes
 //
 app.use(authRouter.routes());
+
+// Require authentication
+app.use((ctx, next) => {
+  if (ctx.isAuthenticated()) {
+    return next()
+  } else {
+    ctx.response.status = 401;
+  }
+})
+
+app.use(trackRouter.routes());
+app.use(searchRouter.routes());
 
 //
 // Start server
