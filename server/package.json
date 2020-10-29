@@ -7,7 +7,7 @@
     "build": "tsc --build",
     "start": "ts-node-dev  --max-http-header-size=80000 --files src/server.ts"
   },
-  "license": "MIT",
+  "license": "AGPLv3",
   "dependencies": {
     "@azure/search-documents": "^11.0.3",
     "axios": "^0.20.0",
