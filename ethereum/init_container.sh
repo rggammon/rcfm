@@ -6,9 +6,9 @@ set -e
 
 if [ -d /mnt/rcfm/geth ]
 then
-    /usr/bin/geth \
+     /usr/bin/geth \
         --networkid 206 \
-        --ipcdisable \
+        --ipcpath /root/geth.ipc \
         --nodiscover \
         --datadir /mnt/rcfm/geth/data \
         --http \
@@ -21,7 +21,8 @@ then
         --mine \
         --unlock 0x2F37f4757138D9fa30307F341459b9531CCD9Ba6 \
         --password /mnt/rcfm/geth/password.txt \
-        --allow-insecure-unlock &
+        --etherbase 0x2F37f4757138D9fa30307F341459b9531CCD9Ba6 \
+        --allow-insecure-unlock >> /mnt/rcfm/geth/geth.log 2>&1 &
 else
     echo "Not running geth"
 fi
