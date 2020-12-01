@@ -6,7 +6,7 @@ import session from "koa-session";
 import authRouter from "./routes/authRouter";
 import trackRouter from "./routes/trackRouter";
 import searchRouter from "./routes/searchRouter";
-import { Profile, Strategy, StrategyOptions } from "passport-coinbase";
+import { IStrategyOption, Profile, Strategy } from "passport-twitter";
 import process from "process";
 import azure from 'azure-storage';
 import Web3 from 'web3';
@@ -47,26 +47,24 @@ const web3 = new Web3(ethEndpoint);
 //
 // Configure passport
 //
-const options: StrategyOptions = {
-  clientID,
-  clientSecret,
-  callbackURL,
-  scope: ['wallet:user:read', 'wallet:user:email'],
-  accountCurrency: "MKR"
+const options: IStrategyOption = {
+  consumerKey: clientID,
+  consumerSecret: clientSecret,
+  callbackURL
 };
 
 passport.use(
   new Strategy(options, 
     (accessToken: string, refreshToken: string, profile: Profile, done) => {
-      const partitionKey = `coinbaseuser_${profile.id}`;
+      const partitionKey = `twitter_${profile.id}`;
       const rowKey = 'profile';
       
-      tableSvc.retrieveEntity('rcfm', partitionKey, rowKey, {}, (error, coinBaseUserEntity: any, response) => {
+      tableSvc.retrieveEntity('rcfm', partitionKey, rowKey, {}, (error, userEntity: any, response) => {
         if (response.statusCode === 404) {
           const web3account = web3.eth.accounts.create();
 
           // Create an eth account
-          coinBaseUserEntity = {
+          userEntity = {
             ethAddress: entGen.String(web3account.address),
             ethPrivateKey: entGen.String(web3account.privateKey)
           };
@@ -76,16 +74,18 @@ passport.use(
           done(error);
         }
 
-        Object.assign(coinBaseUserEntity, {
+        var email = (profile.emails && profile.emails[0].value) || "";
+
+        Object.assign(userEntity, {
           PartitionKey: entGen.String(partitionKey),
           RowKey: entGen.String(rowKey),
           displayName: entGen.String(profile.displayName),
-          email: entGen.String(profile.emails![0].value),
+          email: entGen.String(email),
           lastLogin: entGen.DateTime(new Date()),
           refreshToken: entGen.String(refreshToken)
         });  
 
-        tableSvc.insertOrMergeEntity('rcfm', coinBaseUserEntity, (error, result, response) => {
+        tableSvc.insertOrMergeEntity('rcfm', userEntity, (error, result, response) => {
           if (error) {
             console.error(`Error inserting user: ${error}`);
             done(error);
@@ -93,8 +93,8 @@ passport.use(
             done(null, {
               id: profile.id,
               displayName: profile.displayName,
-              email: profile.emails![0],
-              ethAddress: coinBaseUserEntity.ethAddress._,
+              email,
+              ethAddress: userEntity.ethAddress._,
               accessToken
             });    
           }

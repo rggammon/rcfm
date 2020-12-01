@@ -12,9 +12,9 @@ router.get(`/api/v1/me`, async (ctx : Context) => {
     ctx.body = ctx.state.user;
 });
 
-router.get(`/api/v1/signin`, passport.authenticate('coinbase'));
+router.get(`/api/v1/signin`, passport.authenticate('twitter'));
 
-router.get(`/api/v1/callback`, passport.authenticate('coinbase', {
+router.get(`/api/v1/callback`, passport.authenticate('twitter', {
     successRedirect: '/',
     failureRedirect: '/autherror'
 }));
