@@ -9,7 +9,6 @@ import searchRouter from "./routes/searchRouter";
 import { IStrategyOption, Profile, Strategy } from "passport-twitter";
 import process from "process";
 import azure from 'azure-storage';
-import Web3 from 'web3';
 
 //
 // Read config from environment variables
@@ -40,11 +39,6 @@ tableSvc.createTableIfNotExists('rcfm', function (error, result, response){
 const entGen = azure.TableUtilities.entityGenerator;
 
 //
-// Configure web3 / ethereum
-//
-const web3 = new Web3(ethEndpoint);
-
-//
 // Configure passport
 //
 const options: IStrategyOption = {
@@ -61,12 +55,7 @@ passport.use(
       
       tableSvc.retrieveEntity('rcfm', partitionKey, rowKey, {}, (error, userEntity: any, response) => {
         if (response.statusCode === 404) {
-          const web3account = web3.eth.accounts.create();
-
-          // Create an eth account
           userEntity = {
-            ethAddress: entGen.String(web3account.address),
-            ethPrivateKey: entGen.String(web3account.privateKey)
           };
         }
         else if (error) {
@@ -94,7 +83,6 @@ passport.use(
               id: profile.id,
               displayName: profile.displayName,
               email,
-              ethAddress: userEntity.ethAddress._,
               accessToken
             });    
           }
