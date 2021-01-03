@@ -4,7 +4,7 @@ import logger from "koa-logger";
 import passport from "koa-passport";
 import session from "koa-session";
 import authRouter from "./routes/authRouter";
-import trackRouter from "./routes/trackRouter";
+import squawkRouter from "./routes/squawkRouter";
 import searchRouter from "./routes/searchRouter";
 import { IStrategyOption, Profile, Strategy } from "passport-twitter";
 import process from "process";
@@ -132,7 +132,7 @@ app.use((ctx, next) => {
   }
 })
 
-app.use(trackRouter.routes());
+app.use(squawkRouter.routes());
 app.use(searchRouter.routes());
 
 //

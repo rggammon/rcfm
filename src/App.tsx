@@ -5,9 +5,9 @@ import { Menu } from 'semantic-ui-react';
 import { useAsyncEffect } from 'use-async-effect';
 import { User } from '../server/src/resourceTypes/user';
 import { Route, Switch } from "react-router-dom";
-import AddTrack from './pages/AddTrack';
+import Add from './pages/Add';
 import Home from './pages/Home';
-import Player from './pages/Player';
+import Play from './pages/Play';
 
 function App() {
   const [ user, setUser ] = useState<User | undefined>(undefined);
@@ -30,19 +30,18 @@ function App() {
           }
         </Menu.Menu>
       </Menu>
-      { user && 
         <Switch>
           <Route exact path="/">
             <Home />
           </Route>
-          <Route exact path="/addTrack">
-            <AddTrack />
-          </Route>
-          <Route exact path="/player">
-            <Player />
+          { user && 
+            <Route exact path="/add">
+              <Add />
+            </Route> }
+          <Route exact path="/play/:id">
+            <Play />
           </Route>
         </Switch>
-      }
     </div>
   );
 }
