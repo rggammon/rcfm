@@ -38,27 +38,42 @@ router.get(`/api/v1/users/me/squawk/:id`, (ctx) => {
 });
 
 router.post(`/api/v1/users/me/squawk`, (ctx) => {
-    const squawkId = new Date().getTime().toString(16).padStart(16, "0");
-    // const partitionKey = `twitter_${ctx.state.user.id}`;
-    // const rowKey = `squawk_${squawkId}`;
+    if (ctx.isUnauthenticated()) {
+        ctx.response.status = 401;
+        return;
+    }
 
-    const partitionKey = "squawk_0";
+    const squawkKey = `squawk_${ctx.request.body.tag}`;
     const rowKey = "data";
 
     const entity = {
-        PartitionKey: entGen.String(partitionKey),
+        PartitionKey: entGen.String(squawkKey),
         RowKey: entGen.String(rowKey),
         data: entGen.String(JSON.stringify(ctx.request.body.data))
     };
 
     return new Promise<void>((resolve, reject) => {
-        tableSvc.insertOrMergeEntity('rcfm', entity, (error, result, response) => {
+
+        const userLink = {
+            PartitionKey: entGen.String(`twitter_${ctx.state.user.id}`),
+            RowKey: entGen.String(squawkKey),
+        };
+    
+        tableSvc.insertOrMergeEntity('rcfm', userLink, (error, result, response) => {
             if (error) {
-                ctx.response.status = 400;
-            } else {
-                ctx.response.status = 200;
+                reject(error);
+                return;
             }
-            resolve();
+
+            tableSvc.insertOrMergeEntity('rcfm', entity, (error, result, response) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+
+                ctx.response.status = 200;
+                resolve();
+            });
         });
     });
 });

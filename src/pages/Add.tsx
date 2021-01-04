@@ -13,6 +13,7 @@ interface AddState {
     search: string;
     searchResults: SearchResult[];
     selectedId?: string;
+    tag: string;
 }
 
 function Add() {
@@ -20,7 +21,8 @@ function Add() {
     const [ state, setState ] = useState<AddState>({
         pendingSearch: "",
         search: "",
-        searchResults: []
+        searchResults: [],
+        tag: "0"
     });
 
     useAsyncEffect(async () => {
@@ -77,6 +79,7 @@ function Add() {
                     <h2>Write a tweet</h2>
 
                     <h2>Post!</h2>
+                    <Input onChange={onTagChange}></Input>
                     <Button onClick={handleSubmit}>Submit</Button>
                 </Grid.Column>
             </Grid.Row>
@@ -85,6 +88,10 @@ function Add() {
 
     function onSearchChange(evt: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) {
         setState({...state, pendingSearch: evt.target.value});
+    }
+
+    function onTagChange(evt: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) {
+        setState({...state, tag: evt.target.value});
     }
 
     function onSearchClick() {
@@ -99,7 +106,8 @@ function Add() {
         const response = await client.get_Playlist_Tracks(state.selectedId!)
 
         await axios.post("/api/v1/users/me/squawk", {
-            data: response.data
+            data: response.data,
+            tag: state.tag
         });
 
         history.push("/");

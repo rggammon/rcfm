@@ -122,6 +122,7 @@ app.use(passport.session())
 // Add routes
 //
 app.use(authRouter.routes());
+app.use(squawkRouter.routes());
 
 // Require authentication
 app.use((ctx, next) => {
@@ -132,7 +133,6 @@ app.use((ctx, next) => {
   }
 })
 
-app.use(squawkRouter.routes());
 app.use(searchRouter.routes());
 
 //
