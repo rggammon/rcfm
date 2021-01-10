@@ -1,19 +1,37 @@
-import React from 'react';
-import { Container } from 'semantic-ui-react';
+import React, { useState } from 'react';
+import { Grid } from 'semantic-ui-react';
+import { useAsyncEffect } from 'use-async-effect';
+import axios from 'axios';
+import { Tweet } from 'react-twitter-widgets'
+import { Squawk } from '../../server/src/resourceTypes/squawk';
+
+interface HomeState {
+    squawks: Squawk[];
+}
 
 function Home() {
+    const [ state, setState ] = useState<HomeState>({
+        squawks: []
+    });
+
+    useAsyncEffect(async () => {
+        const squawkResponse = await axios.get("/api/v1/users/me/squawks");
+        setState({
+            ...state,
+            squawks: squawkResponse.data.value
+        });
+    }, []);
+
     return (
-        <Container textAlign="center">
-            <blockquote className="twitter-tweet">
-                <p lang="en" dir="ltr">
-                    &quot;The Duck&#39;s Quack&quot;, recorded 1923 by Kaplan&#39;s Melodists in 1923 at Edison Laboratories. 
-                    <a href="https://twitter.com/hashtag/squac?src=hash&amp;ref_src=twsrc%5Etfw">#squac</a>
-                    <a href="https://t.co/aiEFzhh3MC">https://t.co/aiEFzhh3MC</a>
-                </p>
-                &mdash; Ryan Gammon (@rggammon) 
-                <a href="https://twitter.com/rggammon/status/1344360359910547457?ref_src=twsrc%5Etfw">December 30, 2020</a>
-            </blockquote> 
-        </Container>
+        <Grid celled>
+            {state.squawks.map(s =>
+                <Grid.Row>
+                    <Grid.Column width={16}>
+                        <Tweet tweetId={s.tweetId} options={{ align: "center" }}></Tweet>
+                    </Grid.Column>
+                </Grid.Row>
+            )}
+        </Grid>
     );
 }
 

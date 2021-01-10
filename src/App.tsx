@@ -16,8 +16,6 @@ function App() {
     const response = await axios.get("/api/v1/me");
     if (response.status === 200) {
         setUser(response.data);
-
-        await axios.get("/api/v1/search");
     }
   }, []);
   return (

@@ -14,6 +14,7 @@ interface AddState {
     searchResults: SearchResult[];
     selectedId?: string;
     tag: string;
+    tweet: string;
 }
 
 function Add() {
@@ -22,7 +23,8 @@ function Add() {
         pendingSearch: "",
         search: "",
         searchResults: [],
-        tag: "0"
+        tag: "0",
+        tweet: ""
     });
 
     useAsyncEffect(async () => {
@@ -77,6 +79,7 @@ function Add() {
                     </List>
 
                     <h2>Write a tweet</h2>
+                    <Input onChange={onTweetChange}></Input>
 
                     <h2>Post!</h2>
                     <Input onChange={onTagChange}></Input>
@@ -94,6 +97,10 @@ function Add() {
         setState({...state, tag: evt.target.value});
     }
 
+    function onTweetChange(evt: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) {
+        setState({...state, tweet: evt.target.value});
+    }
+
     function onSearchClick() {
         setState({
             ...state,
@@ -105,9 +112,11 @@ function Add() {
         const client = new AudiusClient("https://discoveryprovider.audius.co/v1");
         const response = await client.get_Playlist_Tracks(state.selectedId!)
 
-        await axios.post("/api/v1/users/me/squawk", {
-            data: response.data,
-            tag: state.tag
+        await axios.put(`/api/v1/users/me/squawks/${state.tag}`, {
+            data: { 
+                ...response.data,
+                tweet: state.tweet
+            },
         });
 
         history.push("/");
