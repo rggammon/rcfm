@@ -4,9 +4,11 @@
   "license": "AGPLv3",
   "private": true,
   "engines": {
-    "node": "12.19.0"
+    "node": "12.16.2"
   },
   "dependencies": {
+    "@microsoft/applicationinsights-react-js": "^3.0.5",
+    "@microsoft/applicationinsights-web": "^2.5.10",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",

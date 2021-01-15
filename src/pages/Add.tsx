@@ -7,6 +7,8 @@ import { Button, Grid, Input, List, InputOnChangeData } from 'semantic-ui-react'
 import { SearchResult } from '../../server/src/resourceTypes/searchResults';
 import { useHistory } from 'react-router-dom';
 import { AudiusClient, Playlist_search_result } from '../clients/audiusClient';
+import { withAITracking } from '@microsoft/applicationinsights-react-js';
+import { reactPlugin } from '../AppInsights';
 
 interface AddState {
     pendingSearch: string;
@@ -123,4 +125,4 @@ function Add() {
     }
 }
 
-export default Add;
+export default withAITracking(reactPlugin, Add);

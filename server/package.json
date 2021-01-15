@@ -8,10 +8,15 @@
     "start": "ts-node-dev  --max-http-header-size=80000 --files src/server.ts"
   },
   "license": "AGPLv3",
+  "private": true,
+  "engines": {
+    "node": "12.13.0"
+  },
   "dependencies": {
     "@azure/data-tables": "^1.0.0-beta.3",
     "@azure/search-documents": "^11.0.3",
     "@types/twit": "^2.2.28",
+    "applicationinsights": "^1.8.8",
     "axios": "^0.21.1",
     "azure-storage": "^2.10.3",
     "koa": "^2.13.0",

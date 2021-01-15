@@ -5,6 +5,8 @@ import { Grid } from 'semantic-ui-react'
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAsyncEffect } from 'use-async-effect';
+import { withAITracking } from '@microsoft/applicationinsights-react-js';
+import { reactPlugin } from '../AppInsights';
 
 interface PlayState {
     src?: string;
@@ -36,4 +38,4 @@ function Play() {
     </>);
 }
 
-export default Play;
+export default withAITracking(reactPlugin, Play);

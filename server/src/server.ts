@@ -9,6 +9,7 @@ import searchRouter from "./routes/searchRouter";
 import { IStrategyOption, Profile, Strategy } from "passport-twitter";
 import process from "process";
 import azure from 'azure-storage';
+import * as appInsights from 'applicationinsights';
 
 //
 // Read config from environment variables
@@ -19,11 +20,17 @@ const clientID = process.env["OAUTH2_CLIENTID"];
 const clientSecret = process.env["OAUTH2_CLIENTSECRET"];
 const callbackURL = process.env["OAUTH2_CALLBACK"];
 const ethEndpoint = process.env["ETH_ENDPOINT"];
+const appInsightsInstrumentationKey = process.env["APPINSIGHTS_INSTRUMENTATIONKEY"];
 
 if (!clientID || !clientSecret || !callbackURL || !koaKey || !ethEndpoint) {
   console.error("Missing rcfm environment settings");
   process.exit(1);
 }
+
+appInsights
+  .setup(appInsightsInstrumentationKey)
+  .setDistributedTracingMode(appInsights.DistributedTracingModes.AI_AND_W3C)
+  .start();
 
 //
 // Configure Azure Storage

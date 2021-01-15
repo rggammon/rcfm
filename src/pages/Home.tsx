@@ -4,6 +4,8 @@ import { useAsyncEffect } from 'use-async-effect';
 import axios from 'axios';
 import { Tweet } from 'react-twitter-widgets'
 import { Squawk } from '../../server/src/resourceTypes/squawk';
+import { withAITracking } from '@microsoft/applicationinsights-react-js';
+import { reactPlugin } from '../AppInsights';
 
 interface HomeState {
     squawks: Squawk[];
@@ -35,4 +37,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default withAITracking(reactPlugin, Home);
