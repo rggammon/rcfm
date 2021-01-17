@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import 'react-h5-audio-player/lib/styles.css';
 import AudioPlayer from 'react-h5-audio-player';
-import { Grid } from 'semantic-ui-react'
+import { Grid } from '@material-ui/core';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAsyncEffect } from 'use-async-effect';
@@ -28,12 +28,10 @@ function Play() {
 
     return (<>
         <h1>Player</h1>
-        <Grid celled>
-            <Grid.Row>
-                <Grid.Column width={16}>
-                    <AudioPlayer src={state.src} />
-                </Grid.Column>
-            </Grid.Row>
+        <Grid container>
+            <Grid item xs={12}>
+                <AudioPlayer src={state.src} />
+            </Grid>
         </Grid>
     </>);
 }

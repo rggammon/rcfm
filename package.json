@@ -7,6 +7,8 @@
     "node": "12.16.2"
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.2",
+    "@material-ui/icons": "^4.11.2",
     "@microsoft/applicationinsights-react-js": "^3.0.5",
     "@microsoft/applicationinsights-web": "^2.5.10",
     "@testing-library/jest-dom": "^4.2.4",
@@ -19,7 +21,6 @@
     "@types/react-router": "^5.1.8",
     "@types/react-router-dom": "^5.1.6",
     "axios": "^0.20.0",
-    "formsy-semantic-ui-react": "^2.0.6",
     "http-proxy-middleware": "^1.0.6",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -28,8 +29,6 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
     "react-twitter-widgets": "^1.9.5",
-    "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "^2.0.0",
     "typescript": "^3.9.7",
     "use-async-effect": "^2.2.2"
   },

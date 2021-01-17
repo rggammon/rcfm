@@ -1,9 +1,7 @@
-// https://github.com/Semantic-Org/Semantic-UI/pull/6260
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAsyncEffect } from 'use-async-effect';
-import { Button, Grid, Input, List, InputOnChangeData } from 'semantic-ui-react'
+import { Button, Grid, TextField, List, ListItem, ListItemText } from '@material-ui/core'
 import { SearchResult } from '../../server/src/resourceTypes/searchResults';
 import { useHistory } from 'react-router-dom';
 import { AudiusClient, Playlist_search_result } from '../clients/audiusClient';
@@ -61,45 +59,43 @@ function Add() {
     }, [state.search]);
   
     const playlistList = state.searchResults.map((searchResult) => (
-        <List.Item>
-            <a onClick={() => setState({ ...state, selectedId: searchResult.document.id })}>
+        <ListItem button onClick={() => setState({ ...state, selectedId: searchResult.document.id })}>            
+            <ListItemText>
                 {searchResult.document.name}
-            </a>
-        </List.Item>
+            </ListItemText>
+        </ListItem>
     ));
 
     return (<>
-        <Grid celled>
-            <Grid.Row>
-                <Grid.Column width={16}>
-                    <h1>Add a squawk</h1>
-                    <h2>Choose an Audius playlist, 11 tracks or fewer</h2>
-                    <Input loading icon='user' placeholder='Search...' onChange={onSearchChange}></Input>
-                    <Button onClick={onSearchClick}>Search</Button>
-                    <List>
-                        {playlistList}
-                    </List>
+        <Grid container>
+            <Grid item xs={12}>
+                <h1>Add a squawk</h1>
+                <h2>Choose an Audius playlist, 11 tracks or fewer</h2>
+                <TextField placeholder='Search...' onChange={onSearchChange}></TextField>
+                <Button onClick={onSearchClick}>Search</Button>
+                <List>
+                    {playlistList}
+                </List>
 
-                    <h2>Write a tweet</h2>
-                    <Input onChange={onTweetChange}></Input>
+                <h2>Write a tweet</h2>
+                <TextField onChange={onTweetChange}></TextField>
 
-                    <h2>Post!</h2>
-                    <Input onChange={onTagChange}></Input>
-                    <Button onClick={handleSubmit}>Submit</Button>
-                </Grid.Column>
-            </Grid.Row>
+                <h2>Post!</h2>
+                <TextField onChange={onTagChange}></TextField>
+                <Button onClick={handleSubmit}>Submit</Button>
+            </Grid>
         </Grid>
     </>);
 
-    function onSearchChange(evt: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) {
+    function onSearchChange(evt: React.ChangeEvent<HTMLInputElement>) {
         setState({...state, pendingSearch: evt.target.value});
     }
 
-    function onTagChange(evt: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) {
+    function onTagChange(evt: React.ChangeEvent<HTMLInputElement>) {
         setState({...state, tag: evt.target.value});
     }
 
-    function onTweetChange(evt: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) {
+    function onTweetChange(evt: React.ChangeEvent<HTMLInputElement>) {
         setState({...state, tweet: evt.target.value});
     }
 

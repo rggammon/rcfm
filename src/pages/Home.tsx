@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid } from 'semantic-ui-react';
+import { Grid } from '@material-ui/core';
 import { useAsyncEffect } from 'use-async-effect';
 import axios from 'axios';
 import { Tweet } from 'react-twitter-widgets'
@@ -25,13 +25,11 @@ function Home() {
     }, []);
 
     return (
-        <Grid celled>
+        <Grid container>
             {state.squawks.map(s =>
-                <Grid.Row>
-                    <Grid.Column width={16}>
-                        <Tweet tweetId={s.tweetId} options={{ align: "center" }}></Tweet>
-                    </Grid.Column>
-                </Grid.Row>
+                <Grid item xs={12}>
+                    <Tweet tweetId={s.tweetId} options={{ align: "center" }}></Tweet>
+                </Grid>
             )}
         </Grid>
     );
