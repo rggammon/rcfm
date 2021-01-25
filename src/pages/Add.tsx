@@ -81,7 +81,6 @@ function Add() {
                 <TextField onChange={onTweetChange}></TextField>
 
                 <h2>Post!</h2>
-                <TextField onChange={onTagChange}></TextField>
                 <Button onClick={handleSubmit}>Submit</Button>
             </Grid>
         </Grid>
@@ -89,10 +88,6 @@ function Add() {
 
     function onSearchChange(evt: React.ChangeEvent<HTMLInputElement>) {
         setState({...state, pendingSearch: evt.target.value});
-    }
-
-    function onTagChange(evt: React.ChangeEvent<HTMLInputElement>) {
-        setState({...state, tag: evt.target.value});
     }
 
     function onTweetChange(evt: React.ChangeEvent<HTMLInputElement>) {
@@ -110,7 +105,7 @@ function Add() {
         const client = new AudiusClient("https://discoveryprovider.audius.co/v1");
         const response = await client.get_Playlist_Tracks(state.selectedId!)
 
-        await axios.put(`/api/v1/users/me/squawks/${state.tag}`, {
+        await axios.post("/api/v1/users/me/squawks", {
             data: { 
                 ...response.data,
                 tweet: state.tweet

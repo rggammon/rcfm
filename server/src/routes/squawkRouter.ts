@@ -1,13 +1,9 @@
 import Router from "koa-router";
 import { DefaultState, Context } from 'koa';
-import azure from 'azure-storage';
+import { TableClient } from "@azure/data-tables";
 import { Squawk } from '../resourceTypes/squawk';
 
 const router = new Router<DefaultState, Context>();
-
-const tableSvc = azure.createTableService();
-
-const entGen = azure.TableUtilities.entityGenerator;
 
 var entityResolver = function(entity: any) {
     var resolvedEntity: any = {};
@@ -21,87 +17,51 @@ var entityResolver = function(entity: any) {
 var options: any = {};
 options.entityResolver = entityResolver;
 
-router.get("/api/v1/users/me/squawks", (ctx) => {
-    return new Promise<void>((resolve, reject) => {
-        try {
-            var query = new azure.TableQuery().top(10).where("PartitionKey gt 'squawk_' and RowKey eq 'data'");
-            var continuationToken = null as unknown as azure.TableService.TableContinuationToken;
-            tableSvc.queryEntities<Squawk>('rcfm', query, continuationToken, options, function(error, results, response) {
-                if (error) {
-                    ctx.response.status = 400;
-                } else {
-                    ctx.response.status = 200;
-                    ctx.body = {
-                        value: results.entries
-                    }
-                }
-                resolve();
-            });
-        } 
-        catch (err) {
-            reject(err);
+router.get("/api/v1/users/me/squawks", async (ctx) => {
+    const tableClient: TableClient = ctx.deps.tableClient;
+    const iter = await tableClient.listEntities<Squawk>({
+        queryOptions: {
+            filter: "PartitionKey gt 'twitter_' and PartitionKey lt 'twitter`' and RowKey gt 'squawk_' and RowKey lt 'squawk`'"
         }
     });
+
+    ctx.body = { 
+        value: []
+    }
+
+    for await (const entity of iter) {
+        ctx.body.value.push(entity);
+    }  
 });
 
-router.get("/api/v1/users/me/squawks/:id", (ctx) => {
-    return new Promise<void>((resolve, reject) => {
-        tableSvc.retrieveEntity('rcfm', `squawk_${ctx.params.id}`, "data", options, (error, result, response) => {
-            if (error) {
-                ctx.response.status = 400;
-            } else {
-                ctx.response.status = 200;
-                const body = response.body as any;
-                ctx.body = {
-                    data: JSON.parse(body.data)
-                };
-            }
-            resolve();
-        });
-    });
+router.get("/api/v1/users/me/squawks/:id", async (ctx) => {
+    const tableClient: TableClient = ctx.deps.tableClient;
+    let twitterUserId = "220252062";
+
+    const squawk = await tableClient.getEntity<Squawk>(`twitter_${twitterUserId}`, `squawk_${ctx.params.id}`);
+    ctx.body = {
+        value: JSON.parse(squawk.data)
+    };
 });
 
-router.post("/api/v1/users/me/squawks/:id", (ctx) => {
+router.post("/api/v1/users/me/squawks", async (ctx) => {
     if (ctx.isUnauthenticated()) {
         ctx.response.status = 401;
         return;
     }
 
-    const squawkKey = `squawk_${ctx.params.id}`;
-    const rowKey = "data";
-
+    const tableClient: TableClient = ctx.deps.tableClient;
     const entity = {
-        PartitionKey: entGen.String(squawkKey),
-        RowKey: entGen.String(rowKey),
-        id: entGen.Int64(ctx.params.id),
-        data: entGen.String(JSON.stringify(ctx.request.body.data)),
+        partitionKey: "twitter_220252062",
+        rowKey: "squawk_1",
+        id: 1,
+        data: "[" + JSON.stringify(ctx.request.body.data[0]) + "]",
         tweetId: "1344360359910547457"
     };
 
-    return new Promise<void>((resolve, reject) => {
+    const upsertResp = await tableClient.createEntity(entity);
 
-        const userLink = {
-            PartitionKey: entGen.String(`twitter_${ctx.state.user.id}`),
-            RowKey: entGen.String(squawkKey),
-        };
-    
-        tableSvc.insertOrMergeEntity('rcfm', userLink, (error, result, response) => {
-            if (error) {
-                reject(error);
-                return;
-            }
-
-            tableSvc.insertOrMergeEntity('rcfm', entity, (error, result, response) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-
-                ctx.response.status = 200;
-                resolve();
-            });
-        });
-    });
+    ctx.response.status = 201;
 });
 
 export default router;
