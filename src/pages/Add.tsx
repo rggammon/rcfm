@@ -70,7 +70,7 @@ function Add() {
         <Grid container>
             <Grid item xs={12}>
                 <h1>Add a squawk</h1>
-                <h2>Choose an Audius playlist, 11 tracks or fewer</h2>
+                <h2>Choose an Audius playlist, 13 tracks or fewer</h2>
                 <TextField placeholder='Search...' onChange={onSearchChange}></TextField>
                 <Button onClick={onSearchClick}>Search</Button>
                 <List>
@@ -104,12 +104,14 @@ function Add() {
     async function handleSubmit(): Promise<void> {
         const client = new AudiusClient("https://discoveryprovider.audius.co/v1");
         const response = await client.get_Playlist_Tracks(state.selectedId!)
+        const value = response?.data?.map((track) => track.id).filter(id => !!id) ?? [];
+        if (value.length === 0) {
+            // error: no tracks
+            return;
+        }
 
         await axios.post("/api/v1/users/me/squawks", {
-            data: { 
-                ...response.data,
-                tweet: state.tweet
-            },
+            value
         });
 
         history.push("/");

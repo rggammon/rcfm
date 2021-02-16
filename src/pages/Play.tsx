@@ -20,7 +20,7 @@ function Play() {
 
     useAsyncEffect(async () => {
         const squawkResponse = await axios.get(`/api/v1/users/me/squawks/${id}`);
-        const trackId = squawkResponse.data.value[0].id;
+        const trackId = squawkResponse.data.value.tracks[0].id;
         setState({
             src: `https://discoveryprovider.audius.co/v1/tracks/${trackId}/stream`
         });

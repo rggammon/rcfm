@@ -26,7 +26,7 @@ function Home() {
 
     return (
         <Grid container>
-            {state.squawks.map(s =>
+            {state.squawks.filter(s => !!s.tweetId).map(s =>
                 <Grid item xs={12}>
                     <Tweet tweetId={s.tweetId} options={{ align: "center" }}></Tweet>
                 </Grid>
