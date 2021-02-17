@@ -1,22 +1,31 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import axios from 'axios';
 import './App.css';
-import { AppBar, IconButton, Typography, Toolbar } from '@material-ui/core';
-import { Menu as MenuIcon } from '@material-ui/icons';
-import { useAsyncEffect } from 'use-async-effect';
-import { User } from '../server/src/resourceTypes/user';
-import { Route, Switch } from "react-router-dom";
-import Add from './pages/Add';
-import Home from './pages/Home';
+import { AppBar, BottomNavigation, BottomNavigationAction, Typography, Toolbar } from '@material-ui/core';
+import { Add as AddIcon, Search as SearchIcon, Settings as SettingsIcon, PlayCircleOutline as PlayIcon } from '@material-ui/icons';
+import { Redirect, Route, Switch, useHistory, useLocation } from "react-router-dom";
 import Play from './pages/Play';
+import Add from './pages/Add';
+import Search from './pages/Search';
+import Settings from './pages/Settings';
+import AudioPlayer from 'react-h5-audio-player';
+import 'react-h5-audio-player/lib/styles.css';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
+  footer: {
+    position: 'fixed',
+    bottom: 0,
+    width: "100%"
   },
-  menuButton: {
-    marginRight: theme.spacing(2),
+  bottomNav: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.primary.main,
+  },
+  bottomNavIcon: {
+    color: "lightgray",
+    '&.Mui-selected': {
+      color: theme.palette.primary.contrastText
+    }
   },
   title: {
     flexGrow: 1,
@@ -25,42 +34,57 @@ const useStyles = makeStyles((theme) => ({
 
 function App() {
   const classes = useStyles();
-  const [ user, setUser ] = useState<User | undefined>(undefined);
-
-  useAsyncEffect(async () => {
-    const response = await axios.get("/api/v1/me");
-    if (response.status === 200) {
-        setUser(response.data);
-    }
-  }, []);
+  const history = useHistory();
+  const location = useLocation();
+  const [ audioPlayerSrc, setAudioPlayerSrc ] = useState<string | undefined>(undefined);
+  
   return (
     <div className="App">
       <AppBar position="static">
         <Toolbar>
-          <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-            <MenuIcon />
-          </IconButton>
           <Typography variant="h6" className={classes.title}>
             Squac
           </Typography>
-          {user ? 
-            (<>{user.displayName}&nbsp;|&nbsp;<a href="/api/v1/signout">Sign out</a></>) : 
-            <a href="/api/v1/signin">Sign in</a>
-          }
         </Toolbar>
       </AppBar>
       <Switch>
         <Route exact path="/">
-          <Home />
+          <Redirect to="/play" />
         </Route>
-        { user && 
-          <Route exact path="/add">
-            <Add />
-          </Route> }
-        <Route exact path="/play/:id">
-          <Play />
+        <Route path="/play/:id?">
+          <Play setAudioPlayerSrc={setAudioPlayerSrc} />
+        </Route>
+        <Route exact path="/search">
+          <Search />
+        </Route>
+        <Route exact path="/add">
+          <Add />
+        </Route>
+        <Route exact path="/settings">
+          <Settings />
         </Route>
       </Switch>
+      <div className={classes.footer}>
+        <AudioPlayer src={audioPlayerSrc} />
+        <BottomNavigation
+          value={
+            (() => {
+                const parts = location.pathname.split("/");
+                return parts?.length > 1 ? parts[1]: undefined;
+            })()
+          }
+          onChange={(event, newValue) => {
+            history.push("/" + newValue);
+          }}
+          showLabels
+          className={classes.bottomNav}
+        >
+          <BottomNavigationAction label="Play" value="play" icon={<PlayIcon />} className={classes.bottomNavIcon} />
+          <BottomNavigationAction label="Search" value="search" icon={<SearchIcon />} className={classes.bottomNavIcon} />
+          <BottomNavigationAction label="Add" value="add" icon={<AddIcon  />} className={classes.bottomNavIcon} />
+          <BottomNavigationAction label="Settings" value="settings" icon={<SettingsIcon />} className={classes.bottomNavIcon} />
+        </BottomNavigation>
+      </div>
     </div>
   );
 }

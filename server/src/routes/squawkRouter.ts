@@ -23,7 +23,8 @@ router.get("/api/v1/users/me/squawks", async (ctx) => {
     }
 
     for await (const entity of iter) {
-        ctx.body.value.push(entity);
+        const squawk = mapSquawk(entity);
+        ctx.body.value.push(squawk);
     }  
 });
 
@@ -40,26 +41,10 @@ router.get("/api/v1/users/me/squawks/:id", async (ctx) => {
         squawkId = decoded.readUInt32BE(8).toString(16).padStart(8, "0")
     }
 
-    const squawk = await tableClient.getEntity<Squawk>(`twitter_${twitterUserId}`, `squawk_${squawkId}`);
-    let tracks = [];
-    let i = 0;
-    while (true) {
-        const trackId = (squawk as any)[`track_${i}`];
-        if (!trackId) {
-            break;
-        }
-
-        tracks.push({
-            id: trackId
-        });
-
-        i++;
-    }
+    const squawk = await tableClient.getEntity(`twitter_${twitterUserId}`, `squawk_${squawkId}`);
 
     ctx.body = {
-        value: {
-            tracks
-        }
+        value: mapSquawk(squawk)
     };
 });
 
@@ -98,5 +83,25 @@ router.post("/api/v1/users/me/squawks", async (ctx) => {
 
     ctx.response.status = 201;
 });
+
+function mapSquawk(dto: any): Squawk {
+    let tracks: string[] = [];
+    let i = 0;
+    while (true) {
+        const trackId: string = dto[`track_${i}`];
+        if (!trackId) {
+            break;
+        }
+
+        tracks.push(trackId);
+        i++;
+    }
+
+    return {
+        id: dto.id,
+        tweetId: dto.tweetId,
+        tracks
+    }
+}
 
 export default router;
