@@ -110,7 +110,7 @@ function Add() {
             return;
         }
 
-        await axios.post("/api/v1/users/me/squawks", {
+        await axios.post("/api/v1/squawks", {
             value
         });
 

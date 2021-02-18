@@ -25,10 +25,10 @@ function Play(props: PlayProps) {
     useAsyncEffect(async () => {
         let squawk: Squawk;
         if (id) {
-            const squawkResponse = await axios.get(`/api/v1/users/me/squawks/${id}`);
+            const squawkResponse = await axios.get(`/api/v1/squawks/${id}`);
             squawk = squawkResponse.data.value;
         } else {
-            const squawkResponse = await axios.get("/api/v1/users/me/squawks");
+            const squawkResponse = await axios.get("/api/v1/squawks");
             squawk = squawkResponse.data.value[0];
         }
 

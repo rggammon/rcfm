@@ -10,7 +10,7 @@ const base62 = baseX(BASE62)
 
 const router = new Router<DefaultState, Context>();
 
-router.get("/api/v1/users/me/squawks", async (ctx) => {
+router.get("/api/v1/squawks", async (ctx) => {
     const tableClient: TableClient = ctx.deps.tableClient;
     const iter = await tableClient.listEntities<Squawk>({
         queryOptions: {
@@ -28,7 +28,7 @@ router.get("/api/v1/users/me/squawks", async (ctx) => {
     }  
 });
 
-router.get("/api/v1/users/me/squawks/:id", async (ctx) => {
+router.get("/api/v1/squawks/:id", async (ctx) => {
     const tableClient: TableClient = ctx.deps.tableClient;
     let twitterUserId;
     let squawkId;
@@ -48,7 +48,7 @@ router.get("/api/v1/users/me/squawks/:id", async (ctx) => {
     };
 });
 
-router.post("/api/v1/users/me/squawks", async (ctx) => {
+router.post("/api/v1/squawks", async (ctx) => {
     if (ctx.isUnauthenticated()) {
         ctx.response.status = 401;
         return;
@@ -65,14 +65,14 @@ router.post("/api/v1/users/me/squawks", async (ctx) => {
     buf.writeBigUInt64BE(BigInt(ctx.state.user.id));
     buf.writeUInt32BE(timestamp, 8);
 
-    const usid = base62.encode(buf);
-    const squawkId = timestamp.toString(16).padStart(8, "0");
+    const id = base62.encode(buf);
+    const squawkRowId = timestamp.toString(16).padStart(8, "0");
     const tableClient: TableClient = ctx.deps.tableClient;
     const entity = {
         partitionKey: `twitter_${userId}`,
-        rowKey: `squawk_${squawkId}`,
+        rowKey: `squawk_${squawkRowId}`,
         userId,
-        usid
+        id
     };
 
     for (let i = 0; i < ctx.request.body.value?.length; i++) {
