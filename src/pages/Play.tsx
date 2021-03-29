@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useAsyncEffect } from 'use-async-effect';
 import { withAITracking } from '@microsoft/applicationinsights-react-js';
 import { reactPlugin } from '../AppInsights';
+import { makeStyles } from '@material-ui/core/styles';
 
 interface PlayProps {
     setAudioPlayerSrc: (src: string) => void;
@@ -16,7 +17,14 @@ interface PlayState {
     squawk?: Squawk;
 }
 
+const useStyles = makeStyles((theme) => ({
+    container: {
+        height: "100%"
+    },
+}));
+
 function Play(props: PlayProps) {
+    const classes = useStyles();
     const { id } = useParams<{id: string}>();
     const [ state, setState ] = useState<PlayState>({
         squawk: undefined
@@ -41,15 +49,14 @@ function Play(props: PlayProps) {
     }, []);
 
 
-    return (<>
-        <Grid container>
-        {state.squawk?.tweetId && (
-            <Grid item xs={12}>
-                <Tweet tweetId={state.squawk.tweetId} options={{ align: "center" }}></Tweet>
-            </Grid>
-        )}
-        </Grid>
-    </>);
+    return (
+        <Grid container className={classes.container} alignItems="center">
+            {state.squawk?.tweetId && (
+                <Grid item xs={12}>
+                    <Tweet tweetId={state.squawk.tweetId} options={{ align: "center" }} />
+                </Grid>
+            )}
+        </Grid>);
 }
 
-export default withAITracking(reactPlugin, Play);
+export default withAITracking(reactPlugin, Play, "Play", "aitracking");

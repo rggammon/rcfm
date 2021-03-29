@@ -7,6 +7,7 @@ import depsi from "koa-depsi";
 import authRouter from "./routes/authRouter";
 import squawkRouter from "./routes/squawkRouter";
 import { IStrategyOption, Profile, Strategy } from "passport-twitter";
+import { User } from "./resourceTypes/user";
 import process from "process";
 import { TableClient } from "@azure/data-tables";
 import * as appInsights from 'applicationinsights';
@@ -56,7 +57,7 @@ async function run(): Promise<void>
     callbackURL
   };
 
-  async function strategyCallback(accessToken: string, refreshToken: string, profile: Profile) {
+  async function strategyCallback(accessToken: string, refreshToken: string, profile: Profile) : Promise<User> {
     const partitionKey: string = `twitter_${profile.id}`;
     const rowKey: string = 'profile';
     
@@ -71,7 +72,10 @@ async function run(): Promise<void>
       ...profileResp,
       partitionKey: partitionKey,
       rowKey: rowKey,
-      email: (profile.emails && profile.emails[0].value) || ""
+      email: (profile.emails && profile.emails[0].value) || "",
+      photo: (profile.photos && profile.photos[0].value) || "",
+      accessToken,
+      refreshToken
     };
 
     const upsertResp = await tableClient.upsertEntity(userEntity, "Merge");
@@ -82,8 +86,9 @@ async function run(): Promise<void>
       return {
         id: profile.id,
         displayName: profile.displayName,
+        username: profile.username,
         email: userEntity.email,
-        accessToken
+        photo: userEntity.photo
       };
     }
   }
@@ -114,7 +119,7 @@ async function run(): Promise<void>
 
   const config = {
     key: 'rcfm.sess',
-    maxAge: 86400000,
+    maxAge: 90 * 86400000, // 90 days
     renew: true
   };
 

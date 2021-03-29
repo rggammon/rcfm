@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import { useAsyncEffect } from 'use-async-effect';
 import { Button, Grid, TextField } from '@material-ui/core'
@@ -7,6 +7,8 @@ import { PlaylistList } from '../components/PlaylistList'
 import { withAITracking } from '@microsoft/applicationinsights-react-js';
 import { reactPlugin } from '../AppInsights';
 import { Hashtag } from 'react-twitter-widgets';
+import { UserContext } from '../contexts/userContext';
+import { makeStyles } from '@material-ui/core/styles';
 
 interface AddState {
     pendingSearch: string;
@@ -15,7 +17,16 @@ interface AddState {
     tracks: ITrack[];
 }
 
+const useStyles = makeStyles((theme) => ({
+    container: {
+        height: "100%",
+        textAlign: "center"
+    },
+}));
+
 function Add() {
+    const classes = useStyles();
+    const userContext = useContext(UserContext);
     const [ state, setState ] = useState<AddState>({
         pendingSearch: "",
         search: "",
@@ -44,9 +55,19 @@ function Add() {
             }));
         }
     }, [state.search]);
-  
+
+
+    if (!userContext.user) {
+        return (
+            <Grid container className={classes.container} alignItems="center" justify="center" alignContent="center">
+                <Grid item xs={12}>
+                    You need to log in.
+                </Grid>
+            </Grid>);
+    }
+
     return (<>
-        <Grid container>
+        <Grid container className={classes.container} alignItems="center">
             <Grid item xs={12}>
                 <h1>Pick an <a href="https://audius.co" target="_blank" rel="noopener noreferrer">Audius</a> playlist</h1>
                 <TextField placeholder='Search...' onChange={onSearchChange}></TextField>
@@ -97,4 +118,4 @@ function Add() {
     }
 }
 
-export default withAITracking(reactPlugin, Add);
+export default withAITracking(reactPlugin, Add, "Add", "aitracking");

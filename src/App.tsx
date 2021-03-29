@@ -33,7 +33,7 @@ function App() {
   const [ audioPlayerSrc, setAudioPlayerSrc ] = useState<string | undefined>(undefined);
   
   return (
-    <Box display="flex" flexDirection="column" height="100vh">
+    <Box display="flex" flexDirection="column" height="100%">
       <Box>
         <AppBar position="relative">
           <Toolbar>
@@ -43,27 +43,19 @@ function App() {
           </Toolbar>
         </AppBar>
       </Box>
-      <Box flexGrow="1" overflow="auto" textAlign="center">
+      <Box flexGrow="1" overflow="auto">
         <Switch>
           <Route exact path="/">
             <Redirect to="/play" />
           </Route>
-          <Route path="/play/:id?">
-            <Play setAudioPlayerSrc={setAudioPlayerSrc} />
-          </Route>
-          <Route exact path="/search">
-            <Search />
-          </Route>
-          <Route exact path="/add">
-            <Add />
-          </Route>
-          <Route exact path="/settings">
-            <Settings />
-          </Route>
+          <Route path="/play/:id?" render={(props) => <Play {...props} setAudioPlayerSrc={setAudioPlayerSrc} />} />
+          <Route exact path="/search" component={Search} />
+          <Route exact path="/add" component={Add} />
+          <Route exact path="/settings" component={Settings} />
         </Switch>
-      </Box>
+        </Box>
       <Box>
-        <AudioPlayer src={audioPlayerSrc} />
+        <AudioPlayer src={audioPlayerSrc} autoPlay={false} autoPlayAfterSrcChange={false} />
         <BottomNavigation
           value={
             (() => {
@@ -79,7 +71,7 @@ function App() {
         >
           <BottomNavigationAction label="Play" value="play" icon={<PlayIcon />} className={classes.bottomNavIcon} />
           <BottomNavigationAction label="Search" value="search" icon={<SearchIcon />} className={classes.bottomNavIcon} />
-          <BottomNavigationAction label="Add" value="add" icon={<AddIcon  />} className={classes.bottomNavIcon} />
+          <BottomNavigationAction label="Add" value="add" icon={<AddIcon />} className={classes.bottomNavIcon} />
           <BottomNavigationAction label="Settings" value="settings" icon={<SettingsIcon />} className={classes.bottomNavIcon} />
         </BottomNavigation>
       </Box>

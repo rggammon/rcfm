@@ -1,25 +1,46 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { withAITracking } from '@microsoft/applicationinsights-react-js';
 import { reactPlugin } from '../AppInsights';
-import { useAsyncEffect } from 'use-async-effect';
-import { User } from '../../server/src/resourceTypes/user';
-import axios from 'axios';
+import { UserContext } from '../contexts/userContext';
+import { makeStyles } from '@material-ui/core/styles';
+import { ExitToApp as ExitIcon } from '@material-ui/icons';
+import { CircularProgress, Grid } from '@material-ui/core';
+
+const useStyles = makeStyles((theme) => ({
+    container: {
+        height: "100%",
+        textAlign: "center"
+    },
+}));
+  
 
 function Settings() {
-    const [ user, setUser ] = useState<User | undefined>(undefined);
+    const classes = useStyles();
+    const userContext = useContext(UserContext);
 
-    useAsyncEffect(async () => {
-        const response = await axios.get("/api/v1/me");
-        if (response.status === 200) {
-            setUser(response.data);
+    return (
+        <Grid container className={classes.container} alignItems="center">
+            <Grid item xs={12}>
+                {renderSettings()}
+            </Grid>
+        </Grid>);
+
+    function renderSettings() {
+        if (userContext.loading) {
+            return <CircularProgress />;
+        } else if (userContext.user) {
+            return (
+                <>
+                    <p>
+                        {userContext.user.photo && <img src={userContext.user.photo} alt="user" /> }
+                        {userContext.user.displayName} ({userContext.user.username})
+                    </p>
+                    <ExitIcon/ ><a href="/api/v1/signout">Sign out</a>
+                </>);
+        } else {
+            return <a href="/api/v1/signin">Sign in</a>;
         }
-    }, []);
-    return (<>
-        {user ? 
-            (<>{user.displayName}&nbsp;|&nbsp;<a href="/api/v1/signout">Sign out</a></>) : 
-            <a href="/api/v1/signin">Sign in</a>
-            }
-    </>);
+    }
 }
 
-export default withAITracking(reactPlugin, Settings);
+export default withAITracking(reactPlugin, Settings, "Settings", "aitracking");
